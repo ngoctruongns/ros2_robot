@@ -13,12 +13,15 @@ find_package(tutorial_interfaces REQUIRED)
 
 add_executable(talker src/publisher.cpp)
 add_executable(listener src/subscriber.cpp)
+add_executable(parameter src/parameters.cpp)
 ament_target_dependencies(talker rclcpp std_msgs tutorial_interfaces)
 ament_target_dependencies(listener rclcpp std_msgs tutorial_interfaces)
+ament_target_dependencies(parameter rclcpp)
 
 install(TARGETS
   talker
   listener
+  parameter
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
