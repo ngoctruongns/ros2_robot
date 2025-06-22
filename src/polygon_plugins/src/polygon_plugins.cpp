@@ -1,4 +1,4 @@
-#include <polygon_base/regular_polygon.hpp>
+#include <polygon_base/polygon.hpp>
 #include <cmath>
 
 namespace polygon_plugins

@@ -4,3 +4,5 @@ install/
 log/
 src/example_interfaces/
 src/examples
+src/eclipse-cyclonedds
+src/ros2

@@ -14,18 +14,17 @@ target_include_directories(area_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 target_compile_features(area_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-
 ament_target_dependencies(
   area_node
   "pluginlib"
 )
+
 install(
   DIRECTORY include/
   DESTINATION include
 )
 
-install(TARGETS
-  area_node
+install(TARGETS area_node
   DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(

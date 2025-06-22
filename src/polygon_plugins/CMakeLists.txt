@@ -11,6 +11,8 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(polygon_base REQUIRED)
 find_package(pluginlib REQUIRED)
 
+pluginlib_export_plugin_description_file(polygon_base plugins.xml)
+
 add_library(polygon_plugins src/polygon_plugins.cpp)
 add_library(polygon_plugins::polygon_plugins ALIAS polygon_plugins)
 target_compile_features(polygon_plugins PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
