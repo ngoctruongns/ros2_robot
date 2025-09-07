@@ -12,8 +12,7 @@ public:
     MinimalSubscriber()
         : Node("minimal_subscriber")
     {
-        auto topic_callback =
-            [this](tutorial_interfaces::msg::Num::UniquePtr msg) -> void
+        auto topic_callback = [this](Num::UniquePtr msg) -> void
         {
             RCLCPP_INFO(this->get_logger(), "I heard: %ld", msg->num);
         };

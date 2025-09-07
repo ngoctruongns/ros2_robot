@@ -1,0 +1,33 @@
+@startuml
+skinparam handwritten true
+skinparam style strict
+
+node "Publisher Node" as Pub #LightPink {
+    component "Publishes Message" as PubMsg
+}
+
+cloud "ROS2 Network" as ROS2_Net #LightGreen {
+    queue "/topic" as Topic
+}
+
+node "Subscriber Node 1" as Sub1 #LightYellow {
+    component "Subscriber 1" as Sub1_Comp
+    interface "Callback 1 (cb1)" as cb1
+}
+
+node "Subscriber Node 2" as Sub2 #LightYellow {
+    component "Subscriber 2" as Sub2_Comp
+    interface "Callback 2 (cb2)" as cb2
+}
+
+Pub --> Topic : Sends Message
+Topic --> Sub1_Comp : Creates Copy 1
+Topic --> Sub2_Comp : Creates Copy 2
+
+Sub1_Comp --> cb1 : Owns Copy 1 (UniquePtr)
+Sub2_Comp --> cb2 : Owns Copy 2 (UniquePtr)
+
+cb1 --> Sub1_Comp : Processes/Destroys Copy 1
+cb2 --> Sub2_Comp : Processes/Destroys Copy 2
+
+@enduml

@@ -8,6 +8,53 @@
 using namespace std::chrono_literals;
 using example_interfaces::srv::AddTwoInts;
 
+// Using code as class node
+class AddTwoIntsClient : public rclcpp::Node
+{
+public:
+    AddTwoIntsClient()
+        : Node("add_two_ints_client")
+    {
+        client_ = this->create_client<AddTwoInts>("add_two_ints");
+    }
+
+    bool waitingService(void)
+    {
+        while (!client_->wait_for_service(1s))
+        {
+            if (!rclcpp::ok())
+            {
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+                return false;
+            }
+            RCLCPP_INFO(this->get_logger(), "Service not available, waiting again...");
+        }
+        return true;
+    }
+
+    void sendRequest(int64_t a, int64_t b)
+    {
+        auto request = std::make_shared<AddTwoInts::Request>();
+        request->a = a;
+        request->b = b;
+        auto result_future = client_->async_send_request(request);
+
+        // Wait for the result.
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) ==
+            rclcpp::FutureReturnCode::SUCCESS)
+        {
+            RCLCPP_INFO(this->get_logger(), "Sum: %ld", result_future.get()->sum);
+        }
+        else
+        {
+            RCLCPP_ERROR(this->get_logger(), "Failed to call service add_two_ints");
+        }
+    }
+
+private:
+    rclcpp::Client<AddTwoInts>::SharedPtr client_;
+};
+
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
@@ -18,34 +65,32 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    auto node = rclcpp::Node::make_shared("add_two_ints_client");
-    auto client = node->create_client<AddTwoInts>("add_two_ints");
+    std::unique_ptr<AddTwoIntsClient> node = std::make_unique<AddTwoIntsClient>();
 
-    auto request = std::make_shared<AddTwoInts::Request>();
-    request->a = atoll(argv[1]);
-    request->b = atoll(argv[2]);
-
-    while (!client->wait_for_service(1s))
+    int64_t a, b;
+    try
     {
-        if (!rclcpp::ok())
-        {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
-            return 0;
-        }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+        a = std::stoll(argv[1]);
+        b = std::stoll(argv[2]);
+    }
+    catch (const std::invalid_argument &e)
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Invalid arguments: %s", e.what());
+        return 1;
+    }
+    catch (const std::out_of_range &e)
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Arguments out of range: %s", e.what());
+        return 1;
     }
 
-    auto result = client->async_send_request(request);
-    // Wait for the result.
-    if (rclcpp::spin_until_future_complete(node, result) ==
-        rclcpp::FutureReturnCode::SUCCESS)
+    if (!node->waitingService())
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sum: %ld", result.get()->sum);
+        rclcpp::shutdown();
+        return 1;
     }
-    else
-    {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
-    }
+
+    node->sendRequest(a, b);
 
     rclcpp::shutdown();
     return 0;
